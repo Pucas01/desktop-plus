@@ -183,7 +183,7 @@ export class RepositoryListItem extends React.Component<
 
   private renderDisclosure() {
     if (!this.props.hasChildren) {
-      return null
+      return <span className="repository-list-item-disclosure-spacer" />
     }
 
     return (

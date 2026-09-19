@@ -47,17 +47,23 @@
     }
 
     &.repository-submodule-item {
-      padding-left: calc(var(--spacing) + var(--submodule-depth, 1) * var(--spacing));
+      padding-left: calc(
+        var(--spacing) + var(--submodule-depth, 1) * var(--spacing-double)
+      );
     }
 
-    .repository-list-item-disclosure {
+    .repository-list-item-disclosure,
+    .repository-list-item-disclosure-spacer {
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       width: 16px;
       height: 16px;
       margin-right: var(--spacing-third);
+    }
+
+    .repository-list-item-disclosure {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 0;
       background: transparent;
       border: none;

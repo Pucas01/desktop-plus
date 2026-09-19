@@ -373,7 +373,8 @@ function buildSubmoduleRows(
   item: IRepositoryListItem,
   localRepositoryStateLookup: ReadonlyMap<number, ILocalRepositoryState>,
   allRepositories: ReadonlyArray<Repositoryish>,
-  ancestorRepositoryIds: ReadonlySet<number> = new Set()
+  ancestorRepositoryIds: ReadonlySet<number> = new Set(),
+  startingDepth: number = 1
 ): IRepositoryListItem[] {
   const r = item.repository
   if (!(r instanceof Repository) || ancestorRepositoryIds.has(r.id)) {
@@ -433,7 +434,8 @@ function buildSubmoduleRows(
             row,
             localRepositoryStateLookup,
             allRepositories,
-            ancestorIdsWithSelf
+            ancestorIdsWithSelf,
+            depth + 1
           )
         )
       } else {
@@ -442,7 +444,7 @@ function buildSubmoduleRows(
     }
   }
 
-  addRowsForParent(null, 1, item.id)
+  addRowsForParent(null, startingDepth, item.id)
 
   return rows
 }
