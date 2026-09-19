@@ -5086,30 +5086,10 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.showWorktreesInRepoList = showWorktreesInRepoList
     this.emitUpdate()
 
-    this.refreshAllWorktreesForRepoList()
-  }
-
-  private async refreshAllWorktreesForRepoList(): Promise<void> {
-    const lookup = this.localRepositoryStateLookup
-
-    for (const repository of this.repositories) {
-      if (repository.missing) {
-        continue
-      }
-
-      const worktrees = await this.loadWorktreesForRepoList(repository)
-      const existing = lookup.get(repository.id)
-      lookup.set(repository.id, {
-        aheadBehind: existing?.aheadBehind ?? null,
-        changedFilesCount: existing?.changedFilesCount ?? 0,
-        branchName: existing?.branchName ?? null,
-        defaultBranchName: existing?.defaultBranchName ?? null,
-        worktrees,
-        submodules: existing?.submodules ?? [],
-      })
-    }
-
-    this.emitUpdate()
+    this.refreshAllForRepoList(async (repo, existing) => ({
+      worktrees: await this.loadWorktreesForRepoList(repo),
+      submodules: existing?.submodules ?? [],
+    }))
   }
 
   public _setShowSubmodulesInRepoList(showSubmodulesInRepoList: boolean) {
@@ -5120,10 +5100,20 @@ export class AppStore extends TypedBaseStore<IAppState> {
     this.showSubmodulesInRepoList = showSubmodulesInRepoList
     this.emitUpdate()
 
-    this.refreshAllSubmodulesForRepoList()
+    this.refreshAllForRepoList(async (repo, existing) => ({
+      worktrees: existing?.worktrees ?? [],
+      submodules: await this.loadSubmodulesForRepoList(repo),
+    }))
   }
 
-  private async refreshAllSubmodulesForRepoList(): Promise<void> {
+  private async refreshAllForRepoList(
+    load: (
+      repository: Repository,
+      existing: ILocalRepositoryState | undefined
+    ) => Promise<
+      Pick<ILocalRepositoryState, 'worktrees' | 'submodules'>
+    >
+  ): Promise<void> {
     const lookup = this.localRepositoryStateLookup
 
     for (const repository of this.repositories) {
@@ -5131,14 +5121,14 @@ export class AppStore extends TypedBaseStore<IAppState> {
         continue
       }
 
-      const submodules = await this.loadSubmodulesForRepoList(repository)
       const existing = lookup.get(repository.id)
+      const { worktrees, submodules } = await load(repository, existing)
       lookup.set(repository.id, {
         aheadBehind: existing?.aheadBehind ?? null,
         changedFilesCount: existing?.changedFilesCount ?? 0,
         branchName: existing?.branchName ?? null,
         defaultBranchName: existing?.defaultBranchName ?? null,
-        worktrees: existing?.worktrees ?? [],
+        worktrees,
         submodules,
       })
     }
